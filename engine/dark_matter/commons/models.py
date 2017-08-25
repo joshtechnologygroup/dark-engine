@@ -70,4 +70,4 @@ class BaseModel(models.Model):
 
 
 # Soft Delete other related objects in which referenced as Foreign Key or once-to-one field
-signals.post_delete.connect(commons_signals.delete_related_objects)
+# signals.post_delete.connect(commons_signals.delete_related_objects)

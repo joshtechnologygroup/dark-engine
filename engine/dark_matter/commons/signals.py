@@ -8,7 +8,7 @@ def delete_related_objects(*args, **kwargs):
     deleted_object = kwargs.get(u'instance')
     if deleted_object:
         for related_field in deleted_object._meta.get_all_related_objects():
-            app_name = u'apps.{}'.format(related_field.related_model._meta.app_label)
+            app_name = u'dark_matter.{}'.format(related_field.related_model._meta.app_label)
             # Only delete related object of our own model. As we have added soft-delete logic in our models.
             if app_name in settings.LOCAL_APPS:
                 related_object = getattr(deleted_object, related_field.get_accessor_name(), None)
