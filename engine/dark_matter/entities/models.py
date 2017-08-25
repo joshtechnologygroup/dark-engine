@@ -22,3 +22,9 @@ class Entity(commons_models.BaseModel):
 
     entity = models.TextField()
     document = models.ForeignKey(Document)
+
+    class Meta:
+        verbose_name_plural = 'Entities'
+
+    def __unicode__(self):
+        return self.entity

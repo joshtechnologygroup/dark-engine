@@ -16,8 +16,11 @@ class EntityScore(commons_models.BaseModel):
 
     entity = models.ForeignKey(entities_models.Entity)
     keyword = models.ForeignKey(keywords_models.Keywords)
-    score = models.IntegerField()
-    score_document = JSONField("Document to store information related to scoring")
+    score = models.FloatField()
+    score_document = JSONField("Document to store information related to scoring", blank=True)
+
+    def __unicode__(self):
+        return "{} - {}".format(self.keyword, self.entity)
 
 
 class DocumentStore(commons_models.BaseModel):
