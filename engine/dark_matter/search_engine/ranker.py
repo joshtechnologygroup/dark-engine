@@ -46,8 +46,10 @@ class Ranker(object):
             headers = cursor.description
 
             for row in cursor.fetchall():
-                for index in range(0,2):
-                    entity_scores.append({headers[index]: row[index]})
+                elem = {}
+                for index in range(0, headers):
+                    elem[headers[index]] = row[index]}
+                entity_scores.append(elem)
 
         # Each element of entity_scores list is a dictionary with keys entity_id, entity_score and is like:
         # {
