@@ -58,7 +58,8 @@ class Settings(LoggerSettingsMixin, Configuration):
         'dark_matter.commons',
         'dark_matter.entities',
         'dark_matter.keywords',
-        'dark_matter.search_engine'
+        'dark_matter.search_engine',
+        'dark_matter.query_parser'
     ]
 
     INSTALLED_APPS = property(lambda self: self.DJANGO_APPS + self.THIRD_PARTY_APPS + self.LOCAL_APPS)

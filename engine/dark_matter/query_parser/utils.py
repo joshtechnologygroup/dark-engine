@@ -1,6 +1,5 @@
 import math
 
-import RAKE
 from nltk import (data, corpus, WordNetLemmatizer, Counter)
 
 
@@ -39,19 +38,3 @@ def process_document(self, documents):
 
 # stretch 2
 # def process_previous_queries(self):
-
-
-def parse_query(query):
-    stopwords = corpus.stopwords.words('english')
-    rake = RAKE.Rake(stopwords)
-
-    max_weight = 0
-    keywords_with_weight = rake.run(query)
-    for x in keywords_with_weight:
-        if x[1] > max_weight:
-            max_weight = x[1]
-
-    normalized_keywords_with_weight = []
-    for x in keywords_with_weight:
-        normalized_keywords_with_weight.append((x[0], x[1] / max_weight))
-    return normalized_keywords_with_weight
