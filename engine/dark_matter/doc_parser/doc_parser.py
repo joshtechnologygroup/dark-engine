@@ -8,10 +8,14 @@ from dark_matter.search_engine.models import EntityScore
 
 
 class DocParser(object):
-    """"""
+    """
+    Parse Documentation to get entities
+    """
 
     def get_documents(self):
-        """"""
+        """
+        Get all documents which have not been parsed yet
+        """
         return Document.objects.filter(is_parsed=False)
 
     def put_entity(self, document, entity):

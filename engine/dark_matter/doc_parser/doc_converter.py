@@ -5,7 +5,9 @@ from django.conf import settings
 
 
 class DocConverter(object):
-    """"""
+    """
+    Converts all file types to text file
+    """
 
     def load_file(self, file_name):
         """"""

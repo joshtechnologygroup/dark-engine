@@ -5,4 +5,4 @@ from django.apps import AppConfig
 
 
 class DocParserConfig(AppConfig):
-    name = 'doc_parser'
+    name = 'dark_matter.doc_parser'
