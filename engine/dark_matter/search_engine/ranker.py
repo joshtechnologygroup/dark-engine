@@ -25,7 +25,7 @@ class Ranker(object):
         kw_names = [kw[0] for kw in self.keywords]
 
         qs_result = search_models.EntityScore.objects.filter(
-            keyword__keyword__in=kw_names
+            keyword__keyword__iter_iexact__in=kw_names
         ).values('entity').annotate(
             Count('keyword'), Avg('score')
         ).values_list(
