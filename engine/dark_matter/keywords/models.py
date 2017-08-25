@@ -12,3 +12,10 @@ class Keywords(commons_models.BaseModel):
     """
 
     keyword = models.TextField()
+
+    class Meta:
+        verbose_name_plural = 'Keywords'
+
+    def __unicode__(self):
+        return self.keyword
+
