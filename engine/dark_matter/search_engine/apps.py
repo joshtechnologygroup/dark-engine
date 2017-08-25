@@ -5,4 +5,4 @@ from django.apps import AppConfig
 
 
 class SearchEngineConfig(AppConfig):
-    name = 'apps.search_engine'
+    name = 'dark_matter.search_engine'

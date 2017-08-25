@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-from apps.commons import models as commons_models
+from dark_matter.commons import models as commons_models
 
 
 class Keywords(commons_models.BaseModel):

@@ -4,5 +4,5 @@ from __future__ import unicode_literals
 from django.apps import AppConfig
 
 
-class CommonsConfig(AppConfig):
-    name = 'apps.commons'
+class EntitiesConfig(AppConfig):
+    name = 'dark_matter.entities'
