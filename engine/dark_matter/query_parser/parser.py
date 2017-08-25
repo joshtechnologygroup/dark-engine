@@ -12,7 +12,7 @@ class Parser(object):
 
     def __init__(self, query):
         self.query = query
-        self.query_id = None
+        self.query_object = None
         self.initialize()
 
     def initialize(self):
@@ -22,7 +22,7 @@ class Parser(object):
         self.save_query()
 
     def save_query(self):
-        self.query_id = query_models.QueryStore.objects.create(text=self.query)
+        self.query_object = query_models.QueryStore.objects.create(text=self.query)
 
     def keyword_processor(self):
         keywords_with_weights = self.extract_keywords()
@@ -65,6 +65,6 @@ class Parser(object):
 
         for kw, weight in weighted_keywords:
             keyword, _ = keyword_models.Keywords.objects.get_or_create(keyword=kw)
-            obj_list.append(query_models.QueryKeywordStore(query=self.query_id, keyword=keyword, score=weight))
+            obj_list.append(query_models.QueryKeywordStore(query=self.query_object, keyword=keyword, score=weight))
 
         query_models.QueryKeywordStore.objects.bulk_create(obj_list)
