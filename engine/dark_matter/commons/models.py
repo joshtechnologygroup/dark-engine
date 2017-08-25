@@ -11,7 +11,7 @@ from dark_matter.commons import signals as commons_signals
 class SoftDeleteQuerySet(QuerySet):
 
     def delete(self):
-        self.update(active=False)
+        self.update(is_active=False)
         for obj in self:
             signals.post_delete.send(sender=obj.__class__, instance=obj)
 
@@ -22,7 +22,7 @@ class SoftDeleteQuerySet(QuerySet):
 class ActiveObjectsManager(models.Manager):
 
     def get_queryset(self):
-        return SoftDeleteQuerySet(self.model, using=self._db).filter(active=True)
+        return SoftDeleteQuerySet(self.model, using=self._db).filter(is_active=True)
 
     def hard_delete(self):
         return getattr(self.get_queryset(), "hard_delete")()
@@ -52,7 +52,7 @@ class BaseModel(models.Model):
         # TODO delete related objects
         signals.pre_delete.send(sender=self.__class__, instance=self)
         super(BaseModel, self).delete(**kwargs)
-        self.active = False
+        self.is_active = False
         self.save()
         signals.post_delete.send(sender=self.__class__, instance=self)
 
@@ -62,7 +62,7 @@ class BaseModel(models.Model):
         If needed, add required signals
         """
 
-        self.active = True
+        self.is_active = True
         self.save()
 
     def hard_delete(self, using=None):

@@ -91,7 +91,7 @@ class Settings(LoggerSettingsMixin, Configuration):
         },
     ]
 
-    WSGI_APPLICATION = 'engine.wsgi.application'
+    WSGI_APPLICATION = 'wsgi.application'
 
     # Password validation
     # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
