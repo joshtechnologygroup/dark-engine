@@ -15,6 +15,9 @@ class Document(commons_models.BaseModel):
     file = models.FileField()
     is_parsed = models.BooleanField(default=False)
 
+    def __unicode__(self):
+        return self.file.name
+
 
 class Entity(commons_models.BaseModel):
     """
