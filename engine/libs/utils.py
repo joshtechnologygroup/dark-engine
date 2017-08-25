@@ -7,6 +7,6 @@ def get_default_django_settings_module():
     except ImportError:
         default_django_settings_module = "engine.settings.local"
     else:
-        default_django_settings_module = "engine.settings.base"
+        default_django_settings_module = "engine.settings.local"
         file_.close()
     return default_django_settings_module
