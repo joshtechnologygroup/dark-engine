@@ -25,3 +25,6 @@ htmlcov
 #Log files
 *.log
 log/
+
+# Local Files
+settings/local.py
