@@ -1,6 +1,7 @@
 from operator import itemgetter
 
 from django.db.models import Count, Avg
+from django.db import connection
 
 from dark_matter.search_engine import (
     constants as search_constants,
@@ -10,40 +11,49 @@ from dark_matter.search_engine import (
 
 class Ranker(object):
 
-    def __init__(self, keywords):
+    def __init__(self, query_id):
         """
-        Expected that Keyword would be List of tuples os [ [K1, Score1], [K2,. Score2] ] type
+        Expected that query_id will be of Integer Type representing ID of the query running
         """
 
-        self.keywords = keywords
+        self.query_id = query_id
 
     def processor(self):
         """
         Basic processor which only needs List of Keywords to operate on
         """
 
-        kw_names = [kw[0] for kw in self.keywords]
+        query = """
+        SELECT
+            tbl_entity.entity_id,
+            sum(tbl_entity.score * tbl_query.score) / avg(sum_all_scores) AS entity_score
+        FROM public.search_engine_entityscore tbl_entity
+            JOIN (SELECT
+                        keyword_id,
+                        score,
+                        sum(score) OVER (PARTITION BY keyword_id) AS sum_all_scores
+                    FROM public.query_parser_querykeywordstore
+                    WHERE query_id = {query_id}) tbl_query
+                ON tbl_entity.keyword_id = tbl_query.keyword_id
+        GROUP BY tbl_entity.entity_id;
 
-        qs_result = search_models.EntityScore.objects.filter(
-            keyword__keyword__iter_iexact__in=kw_names
-        ).values('entity').annotate(
-            Count('keyword'), Avg('score')
-        ).values_list(
-            'entity__entity', 'keyword__count', 'score__avg'
-        )
+        """.format(query_id=self.query_id)
 
-        kw_scores = []
-        total_keywords = len(self.keywords)
+        entity_scores = []
+        with connection.cursor() as cursor:
+            cursor.execute(query)
 
-        # Find Proportionate Rank
-        # Score is Avg Score * Fraction of Keywords found in document
-        for entity, keyword_count, avg_score in qs_result:
-            score = avg_score*(keyword_count/(total_keywords*1.0))
-            if score > search_constants.RESULT_THRESHOLD:
-                kw_scores.append({
-                    "answer": entity,
-                    "score": score
-                })
+            headers = cursor.description
+
+            for row in cursor.fetchall():
+                for index in range(0,2):
+                    entity_scores.append({headers[index]: row[index]})
+
+        # Each element of entity_scores list is a dictionary with keys entity_id, entity_score and is like:
+        # {
+        #     'entity_id': '<entity_id>',
+        #     'entity_score': '<entity_score'
+        # }
 
         # Sort by score
-        return sorted(kw_scores, key=itemgetter("score"), reverse=True)
+        return sorted(entity_scores, key=itemgetter("entity_score"), reverse=True)
