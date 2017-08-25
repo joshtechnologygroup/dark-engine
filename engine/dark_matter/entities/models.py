@@ -13,6 +13,7 @@ class Document(commons_models.BaseModel):
     """
 
     file = models.FileField()
+    is_parsed = models.BooleanField(default=False)
 
 
 class Entity(commons_models.BaseModel):

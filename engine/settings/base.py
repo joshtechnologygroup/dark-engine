@@ -30,7 +30,7 @@ class Settings(LoggerSettingsMixin, Configuration):
 
     # ######### MEDIA CONFIGURATION
     MEDIA_ROOT = normpath(join(DJANGO_ROOT, 'media'))
-    MEDIA_URL = '/media/'
+    MEDIA_URL = 'media/'
     # ######### END MEDIA CONFIGURATION
 
 

@@ -1,9 +1,9 @@
-from django.core.files import File
+import RAKE
+from nltk import corpus
 
 from dark_matter.doc_parser.doc_converter import DocConverter
 from dark_matter.entities.models import Document, Entity
 from dark_matter.keywords.models import Keywords
-from dark_matter.query_parser.parser import Parser
 from dark_matter.search_engine.models import EntityScore
 
 
@@ -12,7 +12,7 @@ class DocParser(object):
 
     def get_documents(self):
         """"""
-        return Document.objects.all()
+        return Document.objects.filter(is_parsed=False)
 
     def put_entity(self, document, entity):
         return Entity.objects.get_or_create(document=document, entity=entity)[0]
@@ -30,12 +30,34 @@ class DocParser(object):
                     score=score
                 )
 
+    def extract_keywords(self, sentance):
+        """"""
+        stopwords = corpus.stopwords.words('english')
+        rake = RAKE.Rake(stopwords)
+
+        max_weight = 0
+        keywords_with_weight = rake.run(sentance)
+
+        for x in keywords_with_weight:
+            if x[1] > max_weight:
+                max_weight = x[1]
+
+        normalized_keywords_with_weight = []
+
+        if not max_weight:
+            # No Data extracted
+            return [[]]
+
+        for x in keywords_with_weight:
+            normalized_keywords_with_weight.append((x[0], x[1] / max_weight))
+
+        return normalized_keywords_with_weight
+
     def parse_document(self, document):
         """"""
         file_content = DocConverter().convert(document.file.url)
-
-        for sentence in file_content.split('.'):
-            keywords = Parser(sentence).extract_keywords()
+        for sentence in file_content:
+            keywords = self.extract_keywords(sentence)
 
             entity = self.put_entity(document, sentence)
             self.put_entity_score(entity, keywords)
