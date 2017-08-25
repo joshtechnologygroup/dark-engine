@@ -3,4 +3,12 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-# Create your models here.
+from apps.commons import models as commons_models
+
+
+class Keywords(commons_models.BaseModel):
+    """
+    Stores keywords information
+    """
+
+    keyword = models.TextField()

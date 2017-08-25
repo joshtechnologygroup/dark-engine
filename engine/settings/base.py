@@ -10,7 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import os
+from os.path import dirname, abspath, basename
+from sys import path
 
 from configurations import Configuration
 
@@ -19,16 +20,25 @@ from .logger_settings import LoggerSettingsMixin
 
 class Settings(LoggerSettingsMixin, Configuration):
 
-    # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # Absolute filesystem path to the Django project directory:
+    DJANGO_ROOT = dirname(dirname(abspath(__file__)))
+    # Absolute filesystem path to the top-level project folder:
+    SITE_ROOT = dirname(DJANGO_ROOT)
+
+    # Site name:
+    SITE_NAME = basename(DJANGO_ROOT)
+
+    ALLOWED_HOSTS = ['*']
+
+    # Add our project to our pythonpath, this way we don't need to type our project
+    # name in our dotted import paths:
+    path.append(DJANGO_ROOT)
 
     # Quick-start development settings - unsuitable for production
     # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = '49zo$w%0)nqh@x_51fpt(z+)#%*copgs^h@^5y%x=gojgtterl'
-
-    ALLOWED_HOSTS = []
 
     # Application definition
 
@@ -43,7 +53,13 @@ class Settings(LoggerSettingsMixin, Configuration):
 
     THIRD_PARTY_APPS = []
 
-    LOCAL_APPS = []
+    LOCAL_APPS = [
+        'libs',
+        'apps.commons',
+        # 'apps.entities',
+        # 'apps.keywords',
+        # 'apps.search_engine'
+    ]
 
     INSTALLED_APPS = property(lambda self: self.DJANGO_APPS + self.THIRD_PARTY_APPS + self.LOCAL_APPS)
 
