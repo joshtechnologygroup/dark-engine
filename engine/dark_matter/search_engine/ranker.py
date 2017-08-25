@@ -11,6 +11,9 @@ from dark_matter.search_engine import (
 class Ranker(object):
 
     def __init__(self, keywords):
+        """
+        Expected that Keyword would be List of tuples os [ [K1, Score1], [K2,. Score2] ] type
+        """
 
         self.keywords = keywords
 
@@ -19,8 +22,10 @@ class Ranker(object):
         Basic processor which only needs List of Keywords to operate on
         """
 
+        kw_names = [kw[0] for kw in self.keywords]
+
         qs_result = search_models.EntityScore.objects.filter(
-            keyword__keyword__in=self.keywords
+            keyword__keyword__in=kw_names
         ).values('entity').annotate(
             Count('keyword'), Avg('score')
         ).values_list(
