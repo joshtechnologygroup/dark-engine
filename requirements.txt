@@ -1,1 +1,8 @@
 Django==1.11.4
+psycopg2==2.7.3
+
+# Make Settings file class-based
+django-configurations==2.0
+
+# Logging
+python-json-logger==0.1.8

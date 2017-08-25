@@ -7,6 +7,8 @@ For more information on this file, see
 https://docs.djangoproject.com/en/1.11/howto/deployment/wsgi/
 """
 
+# TODO: This is traditional Django Setup. Configure according to Configurations Library
+
 import os
 
 from django.core.wsgi import get_wsgi_application
