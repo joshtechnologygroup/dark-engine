@@ -27,4 +27,7 @@ htmlcov
 log/
 
 # Local Files
-settings/local.py
+engine/settings/local.py
+
+# Media Files
+engine/media
