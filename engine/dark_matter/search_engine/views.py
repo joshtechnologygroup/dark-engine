@@ -15,4 +15,6 @@ def search_query(query_string):
     qp = query_parser.Parser(query_string)
     qp.keyword_processor()
     results = ranker.Ranker(qp.query_object).processor()
-    print results
+    for row in results:
+        print row['entity_text'].replace('\n', '').replace('\r', '')
+        print row['entity_score']

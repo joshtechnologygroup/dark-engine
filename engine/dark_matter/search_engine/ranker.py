@@ -29,7 +29,8 @@ class Ranker(object):
         FROM (
                SELECT
                  tbl_entity_score.entity_id,
-                 (sum(tbl_entity_score.score * tbl_query_word_store.score * tbl_keyword_match.f1_score) /
+                 -- (sum(tbl_entity_score.score * tbl_query_word_store.score * tbl_keyword_match.f1_score) / --optimization
+                 (sum(tbl_query_word_store.score * tbl_keyword_match.f1_score) /
                   avg(tbl_query_word_store.sum_all_scores)) AS entity_score
                FROM
                  (SELECT
@@ -57,8 +58,10 @@ class Ranker(object):
                      WHERE id IN (SELECT keyword_id
                                   FROM public.query_parser_querykeywordstore
                                   WHERE query_id = {query_id})) tbl_query_keywords
-                      ON tbl_keywords.key = tbl_query_keywords.key
-                  GROUP BY tbl_keywords.keyword_id, tbl_query_keywords.keyword_id) tbl_keyword_match
+                      ON lower(tbl_keywords.key) = lower(tbl_query_keywords.key)
+                  GROUP BY tbl_keywords.keyword_id, tbl_query_keywords.keyword_id
+                  HAVING (avg(tbl_query_keywords.total_keys) = 1 AND count(tbl_keywords.key) = 1) OR (count(tbl_keywords.key) > 1) -- optimization
+                  ) tbl_keyword_match
                  JOIN (SELECT
                          keyword_id,
                          power(2, score * 10) AS score,
@@ -79,14 +82,14 @@ class Ranker(object):
             cursor.execute(query)
 
             headers = cursor.description
-            range_min = 0
-            range_max = 999999
+            range_min = 999999
+            range_max = 0
 
             for row in cursor.fetchall():
                 elem = {}
-                range_min = row[1] if row[1] < range_min else range_min
-                range_max = row[1] if row[1] > range_max else range_max
                 if row[1] > search_constants.RESULT_THRESHOLD:
+                    range_min = row[1] if row[1] < range_min else range_min
+                    range_max = row[1] if row[1] > range_max else range_max
                     for index in range(0, len(headers)):
                         elem[headers[index][0]] = row[index]
                     # appending similarity score
