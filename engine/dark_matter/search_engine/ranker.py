@@ -98,7 +98,10 @@ class Ranker(object):
 
         # adding score combining logic and providing single score
         for elem in entity_scores:
-            normalized_entity_score = (elem['entity_score'] - range_min) / (range_max - range_min)
+            if (range_max - range_min) = 0:
+                normalized_entity_score = (elem['entity_score'] - range_min)
+            else:
+                normalized_entity_score = (elem['entity_score'] - range_min) / (range_max - range_min)
             elem['entity_score'] = normalized_entity_score * search_constants.LEXICAL_ANALYZER_WEIGHT + elem[
                 'entity_similarity_score'] * search_constants.SEMANTIC_ANALYZER_WEIGHT
 
