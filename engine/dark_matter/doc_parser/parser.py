@@ -1,7 +1,14 @@
+from __future__ import unicode_literals
+
 from nltk import corpus
 
 from dark_matter.commons import parser as commons_parser
-from dark_matter.doc_parser.doc_converter import DocConverter
+from dark_matter.doc_parser import (
+    analyzer,
+    chunker,
+    coalescer,
+    converter as doc_converter
+)
 from dark_matter.entities.models import Document, Entity
 from dark_matter.keywords.models import Keywords
 from dark_matter.search_engine.models import EntityScore
@@ -36,12 +43,6 @@ class DocParser(object):
                     defaults={'score': score}
                 )
 
-    def extract_keywords(self, sentence, processor):
-        """
-        Extract Keywords and assign score to them for each sentence
-        """
-        return processor.run(sentence)
-
     def get_processor(self):
         stopwords = corpus.stopwords.words('english')
         return commons_parser.IndexingDrake(stopwords)
@@ -51,17 +52,30 @@ class DocParser(object):
         Parse Documents
         """
 
-        file_content = DocConverter().convert(document.file.url)
-        processor = self.get_processor()
-        for sentence in file_content:
-            keywords = self.extract_keywords(sentence, processor)
+        # Get file stream
+        file_content = doc_converter.TextDocConverter().process(document.file.url)
 
-            entity = self.put_entity(document, sentence)
-            self.put_entity_score(entity, keywords)
+        # Chunk it
+        chunks = chunker.SentenceChunker(file_content).chunk()
+
+        processor = self.get_processor()
+
+        # Analyze it
+        annotated_chunks = []
+        for chunk in chunks:
+            annotated_chunks.append(analyzer.DrakeAnalyzer(chunk, processor).analyze())
+
+        # Coalesce it
+        entities = coalescer.DummyCoalesce(annotated_chunks).coalesce()
+
+        # # Save to DB
+        # for entity in entities:
+        #     entity_obj = self.put_entity(document, entity)
+        #     print annotated_chunks
+        #     self.put_entity_score(entity_obj, annotated_chunks)
 
     def parse(self):
         """
-        :return:
         """
 
         for document in self.documents:
