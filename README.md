@@ -31,6 +31,7 @@ Setup Steps
     * Models -> punkt
     * Corpora -> stopwords
     * Corpora -> wordnet
+    * All packages -> averaged_perceptron_tagger
 
 1. To Runserver Locally (Not for Prod or staging):
 
