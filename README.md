@@ -30,6 +30,7 @@ Setup Steps
     Download these files:
     * Models -> averaged_perceptron_tagger
     * Models -> punkt
+    * Corpora -> brown
     * Corpora -> stopwords
     * Corpora -> wordnet
 

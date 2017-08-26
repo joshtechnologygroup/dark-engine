@@ -22,6 +22,8 @@ class Ranker(object):
         Basic processor which only needs List of Keywords to operate on
         """
 
+        # TODO: Should exclude soft-deleted object
+
         query = """
         SELECT
           tbl_entity.entity AS entity_text,
