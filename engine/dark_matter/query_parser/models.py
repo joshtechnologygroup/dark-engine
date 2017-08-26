@@ -15,6 +15,10 @@ class QueryStore(commons_models.BaseModel):
 
     text = models.TextField()
 
+    class Meta:
+        verbose_name = 'Query'
+        verbose_name_plural = 'Queries'
+
     def __unicode__(self):
         return self.text
 
@@ -27,7 +31,11 @@ class QueryKeywordStore(commons_models.BaseModel):
     query = models.ForeignKey(QueryStore)
     keyword = models.ForeignKey(keywords_models.Keywords)
     score = models.FloatField()
-    score_doc = JSONField(blank=True)
+    score_doc = JSONField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Query Keyword Score'
+        verbose_name_plural = 'Query Keyword Scores'
 
     def __unicode__(self):
         return "{} - {}".format(self.query.text, self.keyword.keyword)
