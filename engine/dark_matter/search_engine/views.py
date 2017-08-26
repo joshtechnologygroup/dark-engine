@@ -2,15 +2,11 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render
-
-
 # TODO: This is rough View
 from django.views import View
-from django.views.generic import ListView
 
 from dark_matter.query_parser import parser as query_parser
 from dark_matter.search_engine import ranker
-from dark_matter.entities.models import *
 from dark_matter.search_engine.forms import SearchForm
 
 
@@ -31,7 +27,6 @@ class ProfileList(View):
 
         form = self.form_class(request.POST)
         if form.is_valid():
-            print form.data
             qp = query_parser.Parser(form.cleaned_data['query'])
             qp.keyword_processor()
             results = ranker.Ranker(qp.query_object).processor()
