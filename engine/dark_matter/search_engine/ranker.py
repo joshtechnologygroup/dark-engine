@@ -28,18 +28,49 @@ class Ranker(object):
           tbl_entity.entity AS entity_text,
           sq.entity_score
         FROM (
-        SELECT
-          tbl_entity_score.entity_id,
-          sum(tbl_entity_score.score * tbl_query.score) / avg(sum_all_scores) AS entity_score
-        FROM public.search_engine_entityscore tbl_entity_score
-          JOIN (SELECT
-                  keyword_id,
-                  score,
-                  sum(score) OVER () AS sum_all_scores
-                FROM public.query_parser_querykeywordstore
-                WHERE query_id = '{query_id}') tbl_query
-            ON tbl_entity_score.keyword_id = tbl_query.keyword_id
-        GROUP BY tbl_entity_score.entity_id) sq
+               SELECT
+                 tbl_entity_score.entity_id,
+                 (sum(tbl_entity_score.score * tbl_query_word_store.score * tbl_keyword_match.f1_score) /
+                  avg(tbl_query_word_store.sum_all_scores)) AS entity_score
+               FROM
+                 (SELECT
+                    tbl_keywords.keyword_id,
+                    tbl_query_keywords.keyword_id                              AS query_keyword_id,
+                    2 * (count(tbl_keywords.key) / avg(tbl_query_keywords.total_keys)) *
+                    (count(tbl_keywords.key) / avg(tbl_keywords.total_keys)) /
+                    ((count(tbl_keywords.key) / avg(tbl_query_keywords.total_keys)) +
+                     (count(tbl_keywords.key) / avg(tbl_keywords.total_keys))) AS f1_score
+                  FROM
+                    (
+                      SELECT
+                        id                                                                AS keyword_id,
+                        char_length(keyword) - char_length(replace(keyword, ' ', '')) + 1 AS total_keys,
+                        regexp_split_to_table(keyword, ' ')                               AS key
+                      FROM public.keywords_keywords
+                      WHERE id IN (SELECT keyword_id
+                                   FROM public.search_engine_entityscore)) tbl_keywords
+                    JOIN
+                    (SELECT
+                       id                                                                AS keyword_id,
+                       char_length(keyword) - char_length(replace(keyword, ' ', '')) + 1 AS total_keys,
+                       regexp_split_to_table(keyword, ' ')                               AS key
+                     FROM public.keywords_keywords
+                     WHERE id IN (SELECT keyword_id
+                                  FROM public.query_parser_querykeywordstore
+                                  WHERE query_id = {query_id})) tbl_query_keywords
+                      ON tbl_keywords.key = tbl_query_keywords.key
+                  GROUP BY tbl_keywords.keyword_id, tbl_query_keywords.keyword_id) tbl_keyword_match
+                 JOIN (SELECT
+                         keyword_id,
+                         power(2, score * 10) AS score,
+                         sum(power(2, score * 10))
+                         OVER ()              AS sum_all_scores
+                       FROM public.query_parser_querykeywordstore
+                       WHERE query_id = {query_id}) tbl_query_word_store
+                   ON tbl_keyword_match.query_keyword_id = tbl_query_word_store.keyword_id
+                 JOIN public.search_engine_entityscore tbl_entity_score
+                   ON tbl_keyword_match.keyword_id = tbl_entity_score.keyword_id
+               GROUP BY tbl_entity_score.entity_id) sq
           JOIN entities_entity tbl_entity
             ON sq.entity_id = tbl_entity.id;
         """.format(query_id=self.query_object.id)
