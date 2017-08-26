@@ -28,4 +28,4 @@ class ParagraphChunker(BaseChunker):
     """
 
     def chunk(self):
-        raise NotImplemented
+        return [line for line in self.text.splitlines() if line.strip()]

@@ -10,3 +10,4 @@ python-json-logger==0.1.8
 # NLP Libraries
 nltk==3.2.4
 python-rake==1.1.2
+numpy==1.13.1

@@ -26,7 +26,7 @@ class EntityScore(commons_models.BaseModel):
 
 class DocumentStore(commons_models.BaseModel):
     """
-    Stores Relationship between doucments and keywords
+    Stores Relationship between documents and keywords
     """
 
     document = models.ForeignKey(entities_models.Entity)

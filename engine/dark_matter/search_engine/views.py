@@ -14,5 +14,7 @@ from dark_matter.entities.models import *
 def search_query(query_string):
     qp = query_parser.Parser(query_string)
     qp.keyword_processor()
-    results = ranker.Ranker(qp.query_object.id).processor()
-    print results
+    results = ranker.Ranker(qp.query_object).processor()
+    for row in results:
+        print row['entity_text'].replace('\n', '').replace('\r', '')
+        print row['entity_score']

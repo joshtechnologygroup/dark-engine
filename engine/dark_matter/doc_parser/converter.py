@@ -1,3 +1,4 @@
+import codecs
 from os.path import join
 
 from django.conf import settings
@@ -16,7 +17,7 @@ class DocConverter(object):
         return self.convert()
 
     def load_file(self, file_name):
-        with open(join(settings.DJANGO_ROOT, file_name), str('r')) as document_file:
+        with codecs.open(join(settings.DJANGO_ROOT, file_name), str('r'), encoding='utf8') as document_file:
             self.content = document_file.readlines()
 
     def convert(self):
