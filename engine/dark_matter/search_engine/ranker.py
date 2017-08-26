@@ -25,18 +25,23 @@ class Ranker(object):
 
         query = """
         SELECT
-            tbl_entity.entity_id,
-            sum(tbl_entity.score * tbl_query.score) / avg(sum_all_scores) AS entity_score
-        FROM public.search_engine_entityscore tbl_entity
-            JOIN (SELECT
-                        keyword_id,
-                        score,
-                        sum(score) OVER (PARTITION BY keyword_id) AS sum_all_scores
-                    FROM public.query_parser_querykeywordstore
-                    WHERE query_id = {query_id}) tbl_query
-                ON tbl_entity.keyword_id = tbl_query.keyword_id
-        GROUP BY tbl_entity.entity_id;
-
+          tbl_entity.entity AS entity_text,
+          sq.entity_score
+        FROM (
+        SELECT
+          tbl_entity_score.entity_id,
+          sum(tbl_entity_score.score * tbl_query.score) / avg(sum_all_scores) AS entity_score
+        FROM public.search_engine_entityscore tbl_entity_score
+          JOIN (SELECT
+                  keyword_id,
+                  score,
+                  sum(score) OVER () AS sum_all_scores
+                FROM public.query_parser_querykeywordstore
+                WHERE query_id = '{query_id}') tbl_query
+            ON tbl_entity_score.keyword_id = tbl_query.keyword_id
+        GROUP BY tbl_entity_score.entity_id) sq
+          JOIN entities_entity tbl_entity
+            ON sq.entity_id = tbl_entity.id;
         """.format(query_id=self.query_id)
 
         entity_scores = []
@@ -47,9 +52,10 @@ class Ranker(object):
 
             for row in cursor.fetchall():
                 elem = {}
-                for index in range(0, headers):
-                    elem[headers[index]] = row[index]}
-                entity_scores.append(elem)
+                if row[1] > search_constants.RESULT_THRESHOLD:
+                    for index in range(0, len(headers)):
+                        elem[headers[index][0]] = row[index]
+                    entity_scores.append(elem)
 
         # Each element of entity_scores list is a dictionary with keys entity_id, entity_score and is like:
         # {
