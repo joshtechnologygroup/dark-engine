@@ -61,18 +61,14 @@ class DocParser(object):
         processor = self.get_processor()
 
         # Analyze it
-        annotated_chunks = []
         for chunk in chunks:
-            annotated_chunks.append(analyzer.DrakeAnalyzer(chunk, processor).analyze())
+            keywords = analyzer.DrakeAnalyzer(chunk, processor).analyze()
 
-        # Coalesce it
-        entities = coalescer.DummyCoalesce(annotated_chunks).coalesce()
+            # Coalesce it
+            entity = coalescer.DummyCoalesce(chunk).coalesce()
 
-        # # Save to DB
-        # for entity in entities:
-        #     entity_obj = self.put_entity(document, entity)
-        #     print annotated_chunks
-        #     self.put_entity_score(entity_obj, annotated_chunks)
+            entity_obj = self.put_entity(document, entity)
+            self.put_entity_score(entity_obj, keywords)
 
     def parse(self):
         """

@@ -19,7 +19,7 @@ class SentenceChunker(BaseChunker):
     """
 
     def chunk(self):
-        return " ".join(nltk.sent_tokenize(self.text))
+        return nltk.sent_tokenize(self.text)
 
 
 class ParagraphChunker(BaseChunker):
