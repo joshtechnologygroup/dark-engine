@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from nltk import corpus
 
 from dark_matter.commons import parser as commons_parser
@@ -24,8 +22,23 @@ class DocParser(object):
 
     # TODO: We may be able to bulk-insert Keywords, Entities and Scores to improve performance
 
+    WEIGHTS = {
+        "local": 2,
+        "global": 1
+    }
+
     def __init__(self):
         self.documents = Document.objects.filter(is_parsed=False)
+        self.normalized_weights = {}
+        self.normalize_weights()
+
+    def normalize_weights(self):
+        """
+        Normalize all weights to value between 0 to 1
+        """
+
+        total_sum = sum(self.WEIGHTS.values())
+        self.normalized_weights = {key: round(value/(total_sum*1.0), 4) for (key, value) in self.WEIGHTS.iteritems()}
 
     def put_entity(self, document, entity):
         return Entity.objects.get_or_create(document=document, entity=entity)[0]
@@ -33,15 +46,37 @@ class DocParser(object):
     def put_keyword(self, keyword):
         return Keywords.objects.get_or_create(keyword=keyword)[0]
 
-    def put_entity_score(self, entity, keywords):
+    def put_entity_score(self, entity, keywords, global_keywords):
+
         for keyword_data in keywords:
+            keyword_list = set()
             if keyword_data:
-                keyword, score = keyword_data
+
+                keyword, local_score = keyword_data
+                keyword_list.add(keyword)
+
+                global_score = global_keywords.get(keyword, 0)
+
+                # Weights
+                local_weight = self.normalized_weights["local"]
+                global_weight = self.normalized_weights["global"]
+
                 EntityScore.objects.update_or_create(
                     entity=entity,
                     keyword=self.put_keyword(keyword),
-                    defaults={'score': score}
+                    defaults={
+                        'score_document': {
+                            "local_score": local_score,
+                            "global_score": global_score,
+                            "local_weight": local_weight,
+                            "global_weight": global_weight
+                        },
+                        'score': self.calculate_score([local_score, global_score], [local_weight, global_weight])
+                    }
                 )
+
+    def calculate_score(self, scores, weights):
+        return sum([round(_score*_weight, 2) for (_score, _weight) in zip(scores, weights)])
 
     def get_processor(self):
         stopwords = corpus.stopwords.words('english')
@@ -56,19 +91,25 @@ class DocParser(object):
         file_content = doc_converter.TextDocConverter().process(document.file.url)
 
         # Chunk it
-        chunks = chunker.SentenceChunker(file_content).chunk()
+        chunks = chunker.ParagraphChunker(file_content).chunk()
 
         processor = self.get_processor()
 
+        # Global context information store in dict format
+        global_annotations = dict(analyzer.DrakeAnalyzer(". ".join(chunks), processor).analyze())
+
+        annotated_chunks = dict()
+
         # Analyze it
         for chunk in chunks:
-            keywords = analyzer.DrakeAnalyzer(chunk, processor).analyze()
+            annotated_chunks[chunk] = analyzer.DrakeAnalyzer(chunk, processor).analyze()
 
-            # Coalesce it
-            entity = coalescer.DummyCoalesce(chunk).coalesce()
+        # Coalesce the entities
+        annotated_entities = coalescer.DummyCoalesce(annotated_chunks).coalesce()
 
+        for entity, keyword in annotated_entities.iteritems():
             entity_obj = self.put_entity(document, entity)
-            self.put_entity_score(entity_obj, keywords)
+            self.put_entity_score(entity_obj, keyword, global_annotations)
 
     def parse(self):
         """
