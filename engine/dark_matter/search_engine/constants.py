@@ -1,2 +1,2 @@
 # Display results only when they are above this threshold
-RESULT_THRESHOLD = 0.4
+RESULT_THRESHOLD = 0.0
