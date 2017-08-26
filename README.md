@@ -28,10 +28,10 @@ Setup Steps
 
     Open Django shell (`python manage.py shell`) and run `import nltk; nltk.download()`
     Download these files:
+    * Models -> averaged_perceptron_tagger
     * Models -> punkt
     * Corpora -> stopwords
     * Corpora -> wordnet
-    * All packages -> averaged_perceptron_tagger
 
 1. To Runserver Locally (Not for Prod or staging):
 
