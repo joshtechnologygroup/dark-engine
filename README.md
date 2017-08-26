@@ -24,8 +24,22 @@ Setup Steps
 
         python manage.py migrate
 
+1. Install NLP Corpus
+
+    Open Django shell (`python manage.py shell`) and run `import nltk; nltk.download()`
+    Download these files:
+    * Models -> punkt
+    * Corpora -> stopwords
+    * Corpora -> wordnet
+
 1. To Runserver Locally (Not for Prod or staging):
 
         python manage.py runserver 8000
 
         The above command will run the server on port 8000
+
+
+What this does not do
+-----------
+
+1. Actively Parse the Knowledge base for documents (Currently, you would need to manually upload the files)

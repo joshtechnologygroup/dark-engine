@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-from os.path import dirname, abspath, basename
+from os.path import dirname, abspath, basename, normpath, join
 from sys import path
 
 from configurations import Configuration
@@ -27,6 +27,12 @@ class Settings(LoggerSettingsMixin, Configuration):
 
     # Site name:
     SITE_NAME = basename(DJANGO_ROOT)
+
+    # ######### MEDIA CONFIGURATION
+    MEDIA_ROOT = normpath(join(DJANGO_ROOT, 'media'))
+    MEDIA_URL = 'media/'
+    # ######### END MEDIA CONFIGURATION
+
 
     ALLOWED_HOSTS = ['*']
 
@@ -58,7 +64,9 @@ class Settings(LoggerSettingsMixin, Configuration):
         'dark_matter.commons',
         'dark_matter.entities',
         'dark_matter.keywords',
-        'dark_matter.search_engine'
+        'dark_matter.search_engine',
+        'dark_matter.query_parser',
+        'dark_matter.doc_parser',
     ]
 
     INSTALLED_APPS = property(lambda self: self.DJANGO_APPS + self.THIRD_PARTY_APPS + self.LOCAL_APPS)
