@@ -1,5 +1,7 @@
 import nltk
 
+from readless.Segmentation import texttiling
+
 
 class BaseChunker(object):
     """
@@ -28,4 +30,5 @@ class ParagraphChunker(BaseChunker):
     """
 
     def chunk(self):
-        return [line for line in self.text.splitlines() if line.strip()]
+        segmentation = texttiling.TextTiling()
+        return segmentation.run(self.text)
