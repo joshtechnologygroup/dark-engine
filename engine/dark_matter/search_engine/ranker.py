@@ -4,7 +4,6 @@ from django.db import connection
 
 from dark_matter.search_engine import (
     constants as search_constants,
-    models as search_models
 )
 from dark_matter.search_engine.similarity_checker import similarity
 

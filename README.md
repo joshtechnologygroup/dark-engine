@@ -37,3 +37,9 @@ Setup Steps
         python manage.py runserver 8000
 
         The above command will run the server on port 8000
+
+
+What this does not do
+-----------
+
+1. Actively Parse the Knowledge base for documents (Currently, you would need to manually upload the files)
