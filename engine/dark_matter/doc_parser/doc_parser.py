@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from nltk import corpus
 
 from dark_matter.commons import parser as commons_parser

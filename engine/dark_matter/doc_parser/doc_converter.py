@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+import codecs
 from os.path import join
 
 import nltk
@@ -9,7 +13,7 @@ class DocConverter(object):
 
     def load_file(self, file_name):
         """"""
-        with open(join(settings.DJANGO_ROOT, file_name), 'r') as document_file:
+        with codecs.open(join(settings.DJANGO_ROOT, file_name), 'r', encoding='utf8') as document_file:
             lines = document_file.readlines()
 
         return " ".join(lines)
