@@ -56,7 +56,7 @@ class DocParser(object):
         file_content = doc_converter.TextDocConverter().process(document.file.url)
 
         # Chunk it
-        chunks = chunker.SentenceChunker(file_content).chunk()
+        chunks = chunker.ParagraphChunker(file_content).chunk()
 
         processor = self.get_processor()
 
