@@ -12,7 +12,7 @@ class DocConverter(object):
         with open(join(settings.DJANGO_ROOT, file_name), 'r') as document_file:
             lines = document_file.readlines()
 
-        return " ".join(lines)
+        return " ".join(lines).replace('\n', '').replace('\r', '')
 
     def split_sentences(self, file_content):
         """"""

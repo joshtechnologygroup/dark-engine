@@ -1,22 +1,22 @@
 from operator import itemgetter
 
-from django.db.models import Count, Avg
 from django.db import connection
 
 from dark_matter.search_engine import (
     constants as search_constants,
     models as search_models
 )
+from dark_matter.search_engine.similarity_checker import similarity
 
 
 class Ranker(object):
 
-    def __init__(self, query_id):
+    def __init__(self, query_object):
         """
-        Expected that query_id will be of Integer Type representing ID of the query running
+        Expected that query_object will be of Type QueryStore representing current query fired
         """
 
-        self.query_id = query_id
+        self.query_object = query_object
 
     def processor(self):
         """
@@ -42,20 +42,34 @@ class Ranker(object):
         GROUP BY tbl_entity_score.entity_id) sq
           JOIN entities_entity tbl_entity
             ON sq.entity_id = tbl_entity.id;
-        """.format(query_id=self.query_id)
+        """.format(query_id=self.query_object.id)
 
         entity_scores = []
         with connection.cursor() as cursor:
             cursor.execute(query)
 
             headers = cursor.description
+            range_min = 0
+            range_max = 999999
 
             for row in cursor.fetchall():
                 elem = {}
+                range_min = row[1] if row[1] < range_min else range_min
+                range_max = row[1] if row[1] > range_max else range_max
                 if row[1] > search_constants.RESULT_THRESHOLD:
                     for index in range(0, len(headers)):
                         elem[headers[index][0]] = row[index]
+                    # appending similarity score
+                    elem['entity_similarity_score'] = similarity(self.query_object.text, row[0])
                     entity_scores.append(elem)
+
+        # adding score combining logic and providing single score
+        for elem in entity_scores:
+            normalized_entity_score = (elem['entity_score'] - range_min) / (range_max - range_min)
+            elem['entity_score'] = normalized_entity_score * search_constants.LEXICAL_ANALYZER_WEIGHT + elem[
+                'entity_similarity_score'] * search_constants.SEMANTIC_ANALYZER_WEIGHT
+
+            elem.pop('entity_similarity_score', None)
 
         # Each element of entity_scores list is a dictionary with keys entity_id, entity_score and is like:
         # {
@@ -64,4 +78,4 @@ class Ranker(object):
         # }
 
         # Sort by score
-        return sorted(entity_scores, key=itemgetter("entity_score"), reverse=True)
+        return sorted(entity_scores, key=itemgetter('entity_score'), reverse=True)

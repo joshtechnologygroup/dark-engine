@@ -14,5 +14,5 @@ from dark_matter.entities.models import *
 def search_query(query_string):
     qp = query_parser.Parser(query_string)
     qp.keyword_processor()
-    results = ranker.Ranker(qp.query_object.id).processor()
+    results = ranker.Ranker(qp.query_object).processor()
     print results
