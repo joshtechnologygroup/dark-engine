@@ -26,8 +26,8 @@ N = 0
 ######################### word similarity ##########################
 
 def get_best_synset_pair(word_1, word_2):
-    """ 
-    Choose the pair with highest path similarity among all pairs. 
+    """
+    Choose the pair with highest path similarity among all pairs.
     Mimics pattern-seeking behavior of humans.
     """
     max_sim = -1.0
@@ -48,18 +48,18 @@ def get_best_synset_pair(word_1, word_2):
 
 def length_dist(synset_1, synset_2):
     """
-    Return a measure of the length of the shortest path in the semantic 
-    ontology (Wordnet in our case as well as the paper's) between two 
+    Return a measure of the length of the shortest path in the semantic
+    ontology (Wordnet in our case as well as the paper's) between two
     synsets.
     """
     l_dist = sys.maxint
-    if synset_1 is None or synset_2 is None: 
+    if synset_1 is None or synset_2 is None:
         return 0.0
     if synset_1 == synset_2:
         # if synset_1 and synset_2 are the same synset return 0
         l_dist = 0.0
     else:
-        wset_1 = set([str(x.name()) for x in synset_1.lemmas()])        
+        wset_1 = set([str(x.name()) for x in synset_1.lemmas()])
         wset_2 = set([str(x.name()) for x in synset_2.lemmas()])
         if len(wset_1.intersection(wset_2)) > 0:
             # if synset_1 != synset_2 but there is word overlap, return 1.0
@@ -74,12 +74,12 @@ def length_dist(synset_1, synset_2):
 
 def hierarchy_dist(synset_1, synset_2):
     """
-    Return a measure of depth in the ontology to model the fact that 
+    Return a measure of depth in the ontology to model the fact that
     nodes closer to the root are broader and have less semantic similarity
     than nodes further away from the root.
     """
     h_dist = sys.maxint
-    if synset_1 is None or synset_2 is None: 
+    if synset_1 is None or synset_2 is None:
         return h_dist
     if synset_1 == synset_2:
         # return the depth of one of synset_1 or synset_2
@@ -103,12 +103,12 @@ def hierarchy_dist(synset_1, synset_2):
             h_dist = max(lcs_dists)
         else:
             h_dist = 0
-    return ((math.exp(BETA * h_dist) - math.exp(-BETA * h_dist)) / 
+    return ((math.exp(BETA * h_dist) - math.exp(-BETA * h_dist)) /
         (math.exp(BETA * h_dist) + math.exp(-BETA * h_dist)))
-    
+
 def word_similarity(word_1, word_2):
     synset_pair = get_best_synset_pair(word_1, word_2)
-    return (length_dist(synset_pair[0], synset_pair[1]) * 
+    return (length_dist(synset_pair[0], synset_pair[1]) *
         hierarchy_dist(synset_pair[0], synset_pair[1]))
 
 ######################### sentence similarity ##########################
@@ -128,7 +128,7 @@ def most_similar_word(word, word_set):
           max_sim = sim
           sim_word = ref_word
     return sim_word, max_sim
-    
+
 def info_content(lookup_word):
     """
     Uses the Brown corpus available in NLTK to calculate a Laplace
@@ -148,14 +148,14 @@ def info_content(lookup_word):
     lookup_word = lookup_word.lower()
     n = 0 if not brown_freqs.has_key(lookup_word) else brown_freqs[lookup_word]
     return 1.0 - (math.log(n + 1) / math.log(N + 1))
-    
+
 def semantic_vector(words, joint_words, info_content_norm):
     """
     Computes the semantic vector of a sentence. The sentence is passed in as
     a collection of words. The size of the semantic vector is the same as the
     size of the joint word set. The elements are 1 if a word in the sentence
     already exists in the joint word set, or the similarity of the word to the
-    most similar word in the joint word set if it doesn't. Both values are 
+    most similar word in the joint word set if it doesn't. Both values are
     further normalized by the word's (and similar word's) information content
     if info_content_norm is True.
     """
@@ -175,8 +175,8 @@ def semantic_vector(words, joint_words, info_content_norm):
             if info_content_norm:
                 semvec[i] = semvec[i] * info_content(joint_word) * info_content(sim_word)
         i = i + 1
-    return semvec                
-            
+    return semvec
+
 def semantic_similarity(sentence_1, sentence_2, info_content_norm):
     """
     Computes the semantic similarity between two sentences as the cosine
@@ -196,9 +196,9 @@ def word_order_vector(words, joint_words, windex):
     Computes the word order vector for a sentence. The sentence is passed
     in as a collection of words. The size of the word order vector is the
     same as the size of the joint word set. The elements of the word order
-    vector are the position mapping (from the windex dictionary) of the 
+    vector are the position mapping (from the windex dictionary) of the
     word in the joint set if the word exists in the sentence. If the word
-    does not exist in the sentence, then the value of the element is the 
+    does not exist in the sentence, then the value of the element is the
     position of the most similar word in the sentence as long as the similarity
     is above the threshold ETA.
     """
@@ -235,9 +235,10 @@ def word_order_similarity(sentence_1, sentence_2):
 
 ######################### overall similarity ##########################
 
+
 def similarity(sentence_1, sentence_2):
     """
-    Calculate the semantic similarity between two sentences. The last 
+    Calculate the semantic similarity between two sentences. The last
     parameter is True or False depending on whether information content
     normalization is desired or not.
     """

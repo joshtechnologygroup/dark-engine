@@ -100,7 +100,7 @@ class Ranker(object):
 
         # adding score combining logic and providing single score
         for elem in entity_scores:
-            if (range_max - range_min) = 0:
+            if not (range_max - range_min):
                 normalized_entity_score = (elem['entity_score'] - range_min)
             else:
                 normalized_entity_score = (elem['entity_score'] - range_min) / (range_max - range_min)
