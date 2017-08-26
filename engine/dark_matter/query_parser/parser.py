@@ -1,7 +1,7 @@
 import RAKE
 from nltk import (corpus, WordNetLemmatizer, Counter)
 
-from engine.dark_matter.query_parser.models import QueryStore, QueryKeywordStore
+from engine.dark_matter.query_parser.models import QueryKeywordStore
 
 from dark_matter.query_parser import models as query_models
 from dark_matter.keywords import models as keyword_models
@@ -61,24 +61,18 @@ class Parser(object):
         for x in keywords_with_weight:
             normalized_keywords_with_weight.append([x[0], x[1] / max_weight])
 
-        for keyword in normalized_keywords_with_weight:
-            query_store = QueryStore(self.query)
-            query_store.save()
-            QueryKeywordStore(query=query_store, keyword=keyword[0], score=keyword[1]).save()
-        return normalized_keywords_with_weight
+        return self.process_past_queries(normalized_keywords_with_weight)
 
     def process_past_queries(self, keywords_with_weight):
         past_keywords_store = QueryKeywordStore.objects.filter(keyword__in=[keyword[0] for keyword in
                                                                             keywords_with_weight])
         score = {}
-        past_keywords_count = Counter(keyword.keyword for keyword in past_keywords_store)
+        past_keywords_count = Counter([keyword.keyword for keyword in past_keywords_store])
         for keyword in past_keywords_store:
             if not score.get(keyword):
                 score[keyword] = keyword.score
-                past_keywords_store[keyword] = 1
             else:
                 score[keyword] += keyword.score
-                past_keywords_store[keyword] += 1
 
         for keyword in keywords_with_weight:
             score[keyword] /= past_keywords_count.get(keyword)
