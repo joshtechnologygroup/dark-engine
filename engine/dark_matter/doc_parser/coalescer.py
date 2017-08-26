@@ -4,7 +4,15 @@ class Coalesce(object):
     """
 
     def __init__(self, annotated_chunks):
-        self.chunks = annotated_chunks
+        """
+        :param annotated_chunks: dict
+        {
+            chunk1: metadata,
+            chunk2: metadata,
+            ...
+        }
+        """
+        self.annotated_chunks = annotated_chunks
 
     def coalesce(self):
         raise NotImplemented
@@ -12,8 +20,8 @@ class Coalesce(object):
 
 class DummyCoalesce(Coalesce):
     """
-    Does nothing and return as it is
+    Does nothing and return the chunks as it is
     """
 
     def coalesce(self):
-        return self.chunks
+        return self.annotated_chunks
