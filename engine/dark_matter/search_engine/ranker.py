@@ -1,11 +1,9 @@
 from operator import itemgetter
 
-from django.db.models import Count, Avg
 from django.db import connection
 
 from dark_matter.search_engine import (
     constants as search_constants,
-    models as search_models
 )
 
 
@@ -34,8 +32,8 @@ class Ranker(object):
         FROM public.search_engine_entityscore tbl_entity_score
           JOIN (SELECT
                   keyword_id,
-                  score,
-                  sum(score) OVER () AS sum_all_scores
+                  power(2, score*10) as score,
+                  sum(power(2, score*10)) OVER () AS sum_all_scores
                 FROM public.query_parser_querykeywordstore
                 WHERE query_id = '{query_id}') tbl_query
             ON tbl_entity_score.keyword_id = tbl_query.keyword_id
