@@ -1,23 +1,27 @@
 <!DOCTYPE html>
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls admin_static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <body>
-    <form method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Search" />
-    </form>
-    {% if results %} Found the following items:
-    <ol>
-        {% for result in results %}
-        <li>{{result}}</li>
-        {% endfor %}
-    </ol>
-    {% else %}
-    <p>No result found</p>
-    {% endif %}
+    {% block breadcrumbs %}
+        <form method="post" class="breadcrumbs">
+            {% csrf_token %}
+            {{ form }}
+            <input type="submit" value="Search" />
+        </form>
+        <div>
+        {% if results %} Found the following items:
+            {% for result in results %}
+                <h4 class="breadcrumbs">{{result}}</h4>
+            {% endfor %}
+        {% else %}
+            <p class="breadcrumbs">No result found</p>
+        {% endif %}
+        </div>
+    {% endblock %}
 </body>
 </html>
