@@ -12,9 +12,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         # Clear existing data
-        Entity.objects.all().hard_delete()
-        Keywords.objects.all().hard_delete()
-        EntityScore.objects.all().hard_delete()
+        Entity.objects.all().delete()
+        Keywords.objects.all().delete()
+        EntityScore.objects.all().delete()
 
         # Mark Back Document Parsing
         Document.objects.all().update(is_parsed=False)

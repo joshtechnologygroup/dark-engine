@@ -115,6 +115,8 @@ class DRAKE(RAKE.Rake):
             candidate_score = min(round(candidate_score * word_length_bonus_modifier, 2), 1.0)
 
             keyword_candidates[phrase] = candidate_score
+            for word in word_list:
+                keyword_candidates[word] = candidate_score / len(word_list)
 
         return keyword_candidates
 
@@ -143,6 +145,10 @@ class DRAKE(RAKE.Rake):
                 wordnet_tag = wordnet_reader.ADV
             else:
                 wordnet_tag = wordnet_reader.NOUN
+
+            if word == 'described':
+                print wordnet_tag, word
+
             lemmatized_text = lemmatized_text + ' ' + WordNetLemmatizer().lemmatize(word, wordnet_tag)
         return lemmatized_text
 

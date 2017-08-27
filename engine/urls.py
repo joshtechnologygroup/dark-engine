@@ -16,6 +16,9 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+from dark_matter.search_engine.views import ProfileList
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^search/', ProfileList.as_view()),
 ]
