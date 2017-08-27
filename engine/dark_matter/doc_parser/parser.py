@@ -63,16 +63,17 @@ class DocParser(object):
         global_weight = self.normalized_weights["global"]
         tags_weight = self.normalized_weights["tags"]
 
+        entity_obj = []
         for keyword in self.weighted_scores:
             local_score = self.weighted_scores[keyword].get("local", 0)
             global_score = self.weighted_scores[keyword].get("global", 0)
             tags_score = self.weighted_scores[keyword].get("tags", 0)
 
-            EntityScore.objects.update_or_create(
-                entity=entity,
-                keyword=self.put_keyword(keyword),
-                defaults={
-                    'score_document': {
+            entity_obj.append(
+                EntityScore(
+                    entity=entity,
+                    keyword=self.put_keyword(keyword),
+                    score_document={
                         "local_score": local_score,
                         "global_score": global_score,
                         "local_weight": local_weight,
@@ -80,12 +81,18 @@ class DocParser(object):
                         "tags_score": tags_score,
                         "tags_weight": tags_weight
                     },
-                    'score': self.calculate_score(
+                    score=self.calculate_score(
                         [local_score, global_score, tags_score],
                         [local_weight, global_weight, tags_weight]
                     )
-                }
+                )
             )
+
+            if len(entity_obj) > 100:
+                EntityScore.objects.bulk_create(entity_obj)
+                entity_obj = []
+
+        EntityScore.objects.bulk_create(entity_obj)
 
     def calculate_score(self, scores, weights):
         return sum([round(_score*_weight, 2) for (_score, _weight) in zip(scores, weights)])
