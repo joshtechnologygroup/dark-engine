@@ -145,10 +145,6 @@ class DRAKE(RAKE.Rake):
                 wordnet_tag = wordnet_reader.ADV
             else:
                 wordnet_tag = wordnet_reader.NOUN
-
-            if word == 'described':
-                print wordnet_tag, word
-
             lemmatized_text = lemmatized_text + ' ' + WordNetLemmatizer().lemmatize(word, wordnet_tag)
         return lemmatized_text
 

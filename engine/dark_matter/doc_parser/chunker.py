@@ -30,5 +30,14 @@ class ParagraphChunker(BaseChunker):
     """
 
     def chunk(self):
+        return [line for line in self.text.splitlines() if line.strip()]
+
+
+class SmartSegmentChunker(BaseChunker):
+    """
+    Chunks Smartly into pseduo-sentences usinf TextTiling
+    """
+
+    def chunk(self):
         segmentation = texttiling.TextTiling()
         return segmentation.run(self.text)
