@@ -57,7 +57,9 @@ class Settings(LoggerSettingsMixin, Configuration):
         'django.contrib.staticfiles',
     ]
 
-    THIRD_PARTY_APPS = []
+    THIRD_PARTY_APPS = [
+        'taggit'
+    ]
 
     LOCAL_APPS = [
         'libs',
@@ -136,3 +138,6 @@ class Settings(LoggerSettingsMixin, Configuration):
     # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
     STATIC_URL = '/static/'
+
+    # Tags Settings
+    TAGGIT_CASE_INSENSITIVE = True
