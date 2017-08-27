@@ -32,7 +32,7 @@ class ProfileList(View):
             results = ranker.Ranker(qp.query_object).processor()
             response = []
             for row in results:
-                response.append(row['entity_text'])
+                response.append([row['entity_text'], row['entity_score']])
 
             return render(request, self.template_name, {'results': response, 'form': form})
         return render(request, self.template_name, {'form': self.form_class()})
