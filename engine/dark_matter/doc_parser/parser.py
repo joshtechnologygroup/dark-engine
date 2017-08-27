@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from nltk import corpus
 
 from dark_matter.commons import parser as commons_parser
@@ -22,15 +24,23 @@ class DocParser(object):
 
     # TODO: We may be able to bulk-insert Keywords, Entities and Scores to improve performance
 
+    # TODO: Use constants for Global, local, tags etc
+
     WEIGHTS = {
-        "local": 2,
-        "global": 1
+        "local": 3,
+        "global": 1,
+        "tags": 1
+        # TODO: Tags are special as in if they are present, they should have score,
+        # TODO: But if not present, should not penalize other feedback loops
     }
 
     def __init__(self):
         self.documents = Document.objects.filter(is_parsed=False)
         self.normalized_weights = {}
         self.normalize_weights()
+
+        # Keep adding weighted scores here
+        self.weighted_scores = defaultdict(dict)
 
     def normalize_weights(self):
         """
@@ -46,34 +56,36 @@ class DocParser(object):
     def put_keyword(self, keyword):
         return Keywords.objects.get_or_create(keyword=keyword)[0]
 
-    def put_entity_score(self, entity, keywords, global_keywords):
+    def put_entity_score(self, entity):
 
-        for keyword_data in keywords:
-            keyword_list = set()
-            if keyword_data:
+        # Weights
+        local_weight = self.normalized_weights["local"]
+        global_weight = self.normalized_weights["global"]
+        tags_weight = self.normalized_weights["tags"]
 
-                keyword, local_score = keyword_data
-                keyword_list.add(keyword)
+        for keyword in self.weighted_scores:
+            local_score = self.weighted_scores[keyword].get("local", 0)
+            global_score = self.weighted_scores[keyword].get("global", 0)
+            tags_score = self.weighted_scores[keyword].get("tags", 0)
 
-                global_score = global_keywords.get(keyword, 0)
-
-                # Weights
-                local_weight = self.normalized_weights["local"]
-                global_weight = self.normalized_weights["global"]
-
-                EntityScore.objects.update_or_create(
-                    entity=entity,
-                    keyword=self.put_keyword(keyword),
-                    defaults={
-                        'score_document': {
-                            "local_score": local_score,
-                            "global_score": global_score,
-                            "local_weight": local_weight,
-                            "global_weight": global_weight
-                        },
-                        'score': self.calculate_score([local_score, global_score], [local_weight, global_weight])
-                    }
-                )
+            EntityScore.objects.update_or_create(
+                entity=entity,
+                keyword=self.put_keyword(keyword),
+                defaults={
+                    'score_document': {
+                        "local_score": local_score,
+                        "global_score": global_score,
+                        "local_weight": local_weight,
+                        "global_weight": global_weight,
+                        "tags_score": tags_score,
+                        "tags_weight": tags_weight
+                    },
+                    'score': self.calculate_score(
+                        [local_score, global_score, tags_score],
+                        [local_weight, global_weight, tags_weight]
+                    )
+                }
+            )
 
     def calculate_score(self, scores, weights):
         return sum([round(_score*_weight, 2) for (_score, _weight) in zip(scores, weights)])
@@ -96,7 +108,13 @@ class DocParser(object):
         processor = self.get_processor()
 
         # Global context information store in dict format
-        global_annotations = dict(analyzer.DrakeAnalyzer(". ".join(chunks), processor).analyze())
+        keyword_dict = dict(analyzer.DrakeAnalyzer(". ".join(chunks), processor).analyze())
+        for key, value in keyword_dict.iteritems():
+            self.weighted_scores[key]["global"] = value
+
+        # Tags information
+        for key in document.tags.all():
+            self.weighted_scores[key]["tags"] = 1
 
         annotated_chunks = dict()
 
@@ -107,9 +125,25 @@ class DocParser(object):
         # Coalesce the entities
         annotated_entities = coalescer.DummyCoalesce(annotated_chunks).coalesce()
 
-        for entity, keyword in annotated_entities.iteritems():
+        local_keys = set()
+        for entity, keywords in annotated_entities.iteritems():
             entity_obj = self.put_entity(document, entity)
-            self.put_entity_score(entity_obj, keyword, global_annotations)
+
+            # Clear previous local keys
+            self.clear_local_keys(local_keys)
+            local_keys = set()
+
+            # Assign for this round
+            for key, score in keywords:
+                local_keys.add(key)
+                self.weighted_scores[key]["local"] = score
+
+            self.put_entity_score(entity_obj)
+
+    def clear_local_keys(self, local_keys):
+        for key in self.weighted_scores:
+            if key in local_keys:
+                del self.weighted_scores[key]["local"]
 
     def parse(self):
         """
