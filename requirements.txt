@@ -12,3 +12,6 @@ nltk==3.2.4
 python-rake==1.1.2
 numpy==1.13.1
 readless==1.0.17
+
+# Tagging
+django-taggit==0.22.1
